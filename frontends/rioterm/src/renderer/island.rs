@@ -16,7 +16,11 @@ use rustc_hash::FxHashMap;
 use std::borrow::Cow;
 use std::time::{Duration, Instant};
 
-pub const ISLAND_HEIGHT: f32 = 38.0;
+pub const ISLAND_HEIGHT: f32 = if cfg!(target_os = "macos") {
+    38.0
+} else {
+    56.0
+};
 const PROGRESS_BAR_HEIGHT: f32 = 3.0;
 
 /// A bar with no report for this long is dismissed.
@@ -27,12 +31,16 @@ const PROGRESS_BOUNCE_MS: u128 = 1200;
 const PROGRESS_BOUNCE_LEN: f32 = 25.0;
 /// How long the bar takes to ease into a new length or position.
 const PROGRESS_EASE_SECS: f32 = 0.2;
-const TITLE_FONT_SIZE: f32 = 12.0;
+const TITLE_FONT_SIZE: f32 = if cfg!(target_os = "macos") {
+    12.0
+} else {
+    18.0
+};
 
 const TAB_PADDING_X: f32 = 27.0;
 const TAB_GAP: f32 = 6.0;
-const TAB_INSET_Y: f32 = 7.0;
-const TAB_RADIUS: f32 = 6.0;
+const TAB_INSET_Y: f32 = if cfg!(target_os = "macos") { 7.0 } else { 10.0 };
+const TAB_RADIUS: f32 = if cfg!(target_os = "macos") { 6.0 } else { 8.0 };
 const TITLE_ELLIPSIS: char = '…';
 /// Bell dot for tabs that rang while in the background, and the gap
 /// between it and the tab title. A dot, not a glyph: the UI text layer
@@ -237,10 +245,10 @@ fn draw_window_buttons(
     }
 }
 
-const TRAFFIC_LIGHT_RADIUS: f32 = 6.0;
-const TRAFFIC_LIGHT_FIRST_X: f32 = 20.0;
-const TRAFFIC_LIGHT_STEP: f32 = 20.0;
-const TRAFFIC_LIGHT_LEFT_MARGIN: f32 = 76.0;
+const TRAFFIC_LIGHT_RADIUS: f32 = 9.0;
+const TRAFFIC_LIGHT_FIRST_X: f32 = 28.0;
+const TRAFFIC_LIGHT_STEP: f32 = 28.0;
+const TRAFFIC_LIGHT_LEFT_MARGIN: f32 = 112.0;
 const TRAFFIC_LIGHT_BUTTONS: [WindowButton; 3] = [
     WindowButton::Close,
     WindowButton::Minimize,
@@ -296,18 +304,18 @@ fn draw_traffic_lights(sugarloaf: &mut Sugarloaf, hover: Option<WindowButton>) {
             continue;
         }
         let ink = [0.10, 0.08, 0.06, 0.65];
-        let g = 2.5;
+        let g = 3.5;
         match button {
             WindowButton::Close => {
-                sugarloaf.line(cx - g, cy - g, cx + g, cy + g, 1.1, 0.0, ink, 2);
-                sugarloaf.line(cx - g, cy + g, cx + g, cy - g, 1.1, 0.0, ink, 2);
+                sugarloaf.line(cx - g, cy - g, cx + g, cy + g, 1.3, 0.0, ink, 2);
+                sugarloaf.line(cx - g, cy + g, cx + g, cy - g, 1.3, 0.0, ink, 2);
             }
             WindowButton::Minimize => {
-                sugarloaf.line(cx - g, cy, cx + g, cy, 1.1, 0.0, ink, 2);
+                sugarloaf.line(cx - g, cy, cx + g, cy, 1.3, 0.0, ink, 2);
             }
             WindowButton::Maximize => {
-                sugarloaf.line(cx - g, cy, cx + g, cy, 1.1, 0.0, ink, 2);
-                sugarloaf.line(cx, cy - g, cx, cy + g, 1.1, 0.0, ink, 2);
+                sugarloaf.line(cx - g, cy, cx + g, cy, 1.3, 0.0, ink, 2);
+                sugarloaf.line(cx, cy - g, cx, cy + g, 1.3, 0.0, ink, 2);
             }
         }
     }
@@ -2654,11 +2662,11 @@ mod tests {
     #[test]
     fn traffic_lights_use_mac_button_order_and_reject_gaps() {
         let y = ISLAND_HEIGHT / 2.0;
-        assert_eq!(traffic_light_hit(20.0, y), Some(WindowButton::Close));
-        assert_eq!(traffic_light_hit(40.0, y), Some(WindowButton::Minimize));
-        assert_eq!(traffic_light_hit(60.0, y), Some(WindowButton::Maximize));
-        assert_eq!(traffic_light_hit(30.0, y), None);
-        assert_eq!(traffic_light_hit(20.0, y + 12.0), None);
+        assert_eq!(traffic_light_hit(28.0, y), Some(WindowButton::Close));
+        assert_eq!(traffic_light_hit(56.0, y), Some(WindowButton::Minimize));
+        assert_eq!(traffic_light_hit(84.0, y), Some(WindowButton::Maximize));
+        assert_eq!(traffic_light_hit(42.0, y), None);
+        assert_eq!(traffic_light_hit(28.0, y + 15.0), None);
         assert_eq!(traffic_light_hit(0.0, y), None);
     }
 

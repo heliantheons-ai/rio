@@ -103,7 +103,7 @@ The fork adds two opt-in settings for the Linux/wgpu setup:
     drag-window = true
     scroll-tabs = true
 
-TrafficLights places 12px red/yellow/green circular controls on the left.
+TrafficLights places 18px red/yellow/green circular controls on the left.
 Red closes the window, yellow minimizes, and green toggles maximize/restore.
 The control glyphs appear on hover. The original Standard style remains
 the default and keeps the right-hand buttons. Native macOS controls are
@@ -136,3 +136,14 @@ Run the graphics test explicitly when a Vulkan fallback adapter is available:
     CARGO_PROFILE_RELEASE_CODEGEN_UNITS=8 \
     cargo test --locked --release -p rioterm -p sugarloaf --no-default-features \
       --features rioterm/wayland,rioterm/wgpu context::corner_mask::tests -- --ignored
+
+
+## Roomier custom header
+
+On Linux/Windows the custom strip is 56 logical pixels high, with an
+18px title and 18px traffic lights. The lights use 28px spacing and reserve
+112px at the left. Tab pills use 10px vertical insets and 8px rounding.
+The hit areas, title truncation and terminal top inset share these metrics.
+Native macOS strip metrics remain as before. Terminal font settings are
+independent; the local configuration keeps WenKai Mono size 16 and Medium
+500 for bold/italic-bold.
