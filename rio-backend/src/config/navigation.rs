@@ -129,6 +129,15 @@ pub struct ColorAutomation {
     pub color: ColorArray,
 }
 
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+pub enum WindowButtonStyle {
+    #[default]
+    #[serde(alias = "standard")]
+    Standard,
+    #[serde(alias = "traffic-lights")]
+    TrafficLights,
+}
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Navigation {
     #[serde(default = "NavigationMode::default")]
@@ -183,6 +192,9 @@ pub struct Navigation {
     /// Ignored on macOS, which keeps the native traffic lights.
     #[serde(default = "bool::default", rename = "window-buttons")]
     pub window_buttons: bool,
+    /// Shape and placement of the custom window controls.
+    #[serde(default, rename = "window-buttons-style")]
+    pub window_buttons_style: WindowButtonStyle,
     /// Left-drag on an empty part of the tab strip moves the window
     /// (Linux and Windows). macOS always allows this, so the option is
     /// ignored there.
@@ -208,6 +220,7 @@ impl Default for Navigation {
             open_config_with_split: true,
             max_tab_width: default_max_tab_width(),
             window_buttons: false,
+            window_buttons_style: WindowButtonStyle::default(),
             drag_window: false,
             scroll_tabs: false,
         }

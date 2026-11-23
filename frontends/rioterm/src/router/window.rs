@@ -38,7 +38,9 @@ pub fn create_window_builder(
         })
         .with_resizable(true)
         .with_decorations(true)
-        .with_transparent(config.window.opacity < 1.)
+        .with_transparent(
+            config.window.opacity < 1. || config.window.client_corner_radius() > 0.,
+        )
         .with_blur(config.window.blur.into())
         .with_window_icon(Some(icon));
 
@@ -226,7 +228,8 @@ pub fn configure_window(winit_window: &Window, config: &Config) {
         winit_window.set_forward_to_ime_modifier_mask(mask);
     }
 
-    let is_transparent = config.window.opacity < 1.;
+    let is_transparent =
+        config.window.opacity < 1. || config.window.client_corner_radius() > 0.;
     winit_window.set_transparent(is_transparent);
 
     #[cfg(target_os = "macos")]

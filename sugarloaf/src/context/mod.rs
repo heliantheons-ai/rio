@@ -1,3 +1,5 @@
+#[cfg(feature = "wgpu")]
+pub(crate) mod corner_mask;
 pub mod cpu;
 #[cfg(target_os = "macos")]
 pub mod metal;

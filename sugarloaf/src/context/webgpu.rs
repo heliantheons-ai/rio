@@ -243,6 +243,7 @@ impl<'a> WgpuContext<'a> {
 
         tracing::info!("Configured colorspace: {:?}", renderer_config.colorspace);
         tracing::info!("Surface format: {:?}", format);
+        tracing::info!("Surface alpha mode: {:?}", alpha_mode);
 
         WgpuContext {
             device,

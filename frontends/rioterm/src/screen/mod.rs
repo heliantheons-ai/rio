@@ -141,7 +141,9 @@ pub struct ScreenWindowProperties {
 
 #[inline]
 fn window_should_be_opaque(config: &rio_backend::config::Config) -> bool {
-    config.window.opacity >= 1.0 && !config.window.blur.is_glass()
+    config.window.opacity >= 1.0
+        && !config.window.blur.is_glass()
+        && config.window.client_corner_radius() == 0.0
 }
 
 /// A warning for a `working-dir` shells can't start in (they start in the
@@ -2831,14 +2833,21 @@ impl Screen<'_> {
 
     #[inline]
     fn island_tab_layout(&self, num_tabs: usize) -> TabStripLayout {
-        let (max_tab_width, reserved_right) = self
+        let (max_tab_width, reserved_right, reserved_left) = self
             .renderer
             .island
             .as_ref()
-            .map(|island| (island.max_tab_width, island.reserved_right()))
+            .map(|island| {
+                (
+                    island.max_tab_width,
+                    island.reserved_right(),
+                    island.reserved_left(),
+                )
+            })
             .unwrap_or_else(|| {
                 (
                     rio_backend::config::navigation::default_max_tab_width(),
+                    0.0,
                     0.0,
                 )
             });
@@ -2848,6 +2857,7 @@ impl Screen<'_> {
             num_tabs,
             max_tab_width,
             reserved_right,
+            reserved_left,
         )
     }
 
@@ -2983,7 +2993,12 @@ impl Screen<'_> {
         let window_button = if island_visible && in_band {
             let window_width = self.sugarloaf.window_size().width;
             self.renderer.island.as_ref().and_then(|island| {
-                island.window_button_at(window_width, scale_factor, x_unscaled)
+                island.window_button_at(
+                    window_width,
+                    scale_factor,
+                    x_unscaled,
+                    mouse_y as f32 / scale_factor,
+                )
             })
         } else {
             None
@@ -3100,7 +3115,12 @@ impl Screen<'_> {
         // Window buttons come before the tab slots: they live past the
         // last slot, where a press would otherwise start a window drag.
         if let Some(button) = self.renderer.island.as_ref().and_then(|island| {
-            island.window_button_at(window_width, scale_factor, mouse_x_unscaled)
+            island.window_button_at(
+                window_width,
+                scale_factor,
+                mouse_x_unscaled,
+                mouse_y as f32 / scale_factor,
+            )
         }) {
             if !is_right_click {
                 self.stop_hint_mode_if_active();

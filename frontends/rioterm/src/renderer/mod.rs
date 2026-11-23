@@ -238,6 +238,7 @@ impl Renderer {
                 config.navigation.hide_if_single,
                 config.navigation.max_tab_width,
                 config.navigation.draws_window_buttons(),
+                config.navigation.window_buttons_style,
             ))
         } else {
             None

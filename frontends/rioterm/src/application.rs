@@ -2475,6 +2475,20 @@ impl ApplicationHandler<EventPayload> for Application<'_> {
 
             WindowEvent::RedrawRequested => {
                 route.begin_render();
+                // Fullscreen/maximized windows must fill the monitor without
+                // exposing desktop pixels at their corners.
+                let radius = if route.window.winit_window.is_maximized()
+                    || route.window.winit_window.fullscreen().is_some()
+                {
+                    0.0
+                } else {
+                    self.config.window.client_corner_radius()
+                };
+                route
+                    .window
+                    .screen
+                    .sugarloaf
+                    .set_window_corner_radius(radius);
 
                 match route.path {
                     RoutePath::Welcome => {

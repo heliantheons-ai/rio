@@ -85,3 +85,54 @@ Validated on WSL 3.0.5 / WSLg 1.0.79 / Ubuntu 26.04, 2026-11-23:
 
 The interactive window buttons and pointer dragging still require hands-on
 validation in WSLg; this is a development build, not an upstream release.
+
+
+## macOS-style controls and rounded corners
+
+The fork adds two opt-in settings for the Linux/wgpu setup:
+
+    [window]
+    decorations = "Disabled"
+    corner-radius = 12.0
+
+    [navigation]
+    mode = "Tab"
+    hide-if-single = false
+    window-buttons = true
+    window-buttons-style = "TrafficLights"
+    drag-window = true
+    scroll-tabs = true
+
+TrafficLights places 12px red/yellow/green circular controls on the left.
+Red closes the window, yellow minimizes, and green toggles maximize/restore.
+The control glyphs appear on hover. The original Standard style remains
+the default and keeps the right-hand buttons. Native macOS controls are
+unchanged. Circular hit regions exclude the gaps between the lights, and
+the tab/title layout reserves their space.
+
+The corner-radius value is in logical pixels, clamped to 0..32. It applies
+to undecorated Linux windows with the wgpu renderer. It enables window alpha
+without reducing the opacity of the terminal contents. A final GPU pass
+clips just four corner quads with antialiasing; it does not paint black
+corners or impose a rounded rectangle over the content. Maximized and
+fullscreen windows skip the corner pass.
+
+Validation on the WSLg host:
+
+- 46 titlebar layout/hit-region tests, 7 navigation configuration tests,
+  and the corner-radius configuration test passed.
+- An explicit GPU readback test verified all four corners are transparent,
+  center/straight-edge colors remain unchanged, edge pixels are
+  premultiplied and antialiased, and radius zero preserves square corners.
+- A contrasting temporary background confirmed actual transparent
+  corners in the WSLg-composited window, with the three colored lights.
+- Startup/clean shell exit was checked in windowed, maximized and
+  fullscreen modes with the AMD D3D12 adapter.
+
+Run the graphics test explicitly when a Vulkan fallback adapter is available:
+
+    source ~/.cargo/env
+    CARGO_PROFILE_RELEASE_DEBUG=0 CARGO_PROFILE_RELEASE_LTO=thin \
+    CARGO_PROFILE_RELEASE_CODEGEN_UNITS=8 \
+    cargo test --locked --release -p rioterm -p sugarloaf --no-default-features \
+      --features rioterm/wayland,rioterm/wgpu context::corner_mask::tests -- --ignored

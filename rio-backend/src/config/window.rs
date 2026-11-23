@@ -206,6 +206,9 @@ pub struct Window {
     pub background_image: Option<ImageProperties>,
     #[serde(default = "Decorations::default")]
     pub decorations: Decorations,
+    /// Client-side corner radius in logical px (Linux/wgpu, undecorated windows).
+    #[serde(default, rename = "corner-radius")]
+    pub corner_radius: f32,
     /// On by default on macOS, where native tabs then sit in the titlebar.
     #[serde(
         default = "default_macos_unified_titlebar",
@@ -266,6 +269,7 @@ impl Default for Window {
             #[cfg(feature = "renderer")]
             background_image: None,
             decorations: Decorations::default(),
+            corner_radius: 0.0,
             blur: WindowBlur::default(),
             macos_use_unified_titlebar: default_macos_unified_titlebar(),
             macos_use_shadow: true,
@@ -318,7 +322,37 @@ impl Colorspace {
 }
 
 impl Window {
+    pub fn client_corner_radius(&self) -> f32 {
+        if cfg!(target_os = "linux")
+            && self.decorations == Decorations::Disabled
+            && self.corner_radius.is_finite()
+        {
+            self.corner_radius.clamp(0.0, 32.0)
+        } else {
+            0.0
+        }
+    }
+
     pub fn is_fullscreen(&self) -> bool {
         self.mode == WindowMode::Fullscreen
+    }
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod corner_tests {
+    use super::*;
+    #[test]
+    fn rounded_corners_only_apply_to_undecorated_windows() {
+        let mut window = Window {
+            corner_radius: 12.0,
+            ..Default::default()
+        };
+        assert_eq!(window.client_corner_radius(), 0.0);
+        window.decorations = Decorations::Disabled;
+        assert_eq!(window.client_corner_radius(), 12.0);
+        window.corner_radius = 1000.0;
+        assert_eq!(window.client_corner_radius(), 32.0);
+        window.corner_radius = f32::NAN;
+        assert_eq!(window.client_corner_radius(), 0.0);
     }
 }

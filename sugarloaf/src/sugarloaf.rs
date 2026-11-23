@@ -34,6 +34,9 @@ pub struct Sugarloaf<'a> {
     /// producing byte-identical framebuffer colors.
     colorspace: Colorspace,
     pub background_color: Option<Color>,
+    window_corner_radius: f32,
+    #[cfg(feature = "wgpu")]
+    corner_mask: Option<crate::context::corner_mask::CornerMask>,
     pub background_image: Option<ImageProperties>,
     pub graphics: Graphics,
     #[cfg(feature = "wgpu")]
@@ -251,6 +254,9 @@ impl Sugarloaf<'_> {
             ctx,
             colorspace,
             background_color: Some(Color::BLACK),
+            window_corner_radius: 0.0,
+            #[cfg(feature = "wgpu")]
+            corner_mask: None,
             background_image: None,
             renderer,
             graphics: Graphics::default(),
@@ -907,6 +913,15 @@ impl Sugarloaf<'_> {
         std::mem::take(&mut self.renderer.frame_dropped)
     }
 
+    pub fn set_window_corner_radius(&mut self, radius: f32) {
+        self.window_corner_radius = if radius.is_finite() {
+            radius.clamp(0.0, 32.0)
+        } else {
+            0.0
+        };
+    }
+
+    #[inline]
     pub fn render(&mut self) {
         self.render_with_grids(&mut []);
     }
@@ -1253,6 +1268,18 @@ impl Sugarloaf<'_> {
                 );
             }
             filters_brush.render(ctx, &mut encoder, &frame.texture, &frame.texture);
+        }
+        if self.window_corner_radius > 0.0 {
+            let mask = self.corner_mask.get_or_insert_with(|| {
+                crate::context::corner_mask::CornerMask::new(&ctx.device, ctx.format)
+            });
+            mask.render(
+                &ctx.queue,
+                &mut encoder,
+                &view,
+                [ctx.size.width, ctx.size.height],
+                self.window_corner_radius * ctx.scale,
+            );
         }
         ctx.queue.submit(Some(encoder.finish()));
         ctx.queue.present(frame);

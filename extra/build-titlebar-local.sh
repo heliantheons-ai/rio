@@ -11,3 +11,8 @@ export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=8
 cargo build --locked --release -p rioterm --no-default-features --features wayland,wgpu
 cargo test --locked --release -p rioterm --no-default-features --features wayland,wgpu renderer::island::tests
 cargo test --locked --release -p rioterm -p rio-backend --no-default-features --features rioterm/wayland,rioterm/wgpu config::navigation
+
+cargo test --locked --release -p rioterm -p rio-backend --no-default-features --features rioterm/wayland,rioterm/wgpu config::window::corner_tests
+if [ "${RIO_TEST_GPU:-0}" = "1" ]; then
+    cargo test --locked --release -p rioterm -p sugarloaf --no-default-features --features rioterm/wayland,rioterm/wgpu context::corner_mask::tests -- --ignored
+fi
