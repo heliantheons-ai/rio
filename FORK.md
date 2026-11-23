@@ -141,9 +141,9 @@ Run the graphics test explicitly when a Vulkan fallback adapter is available:
 ## Roomier custom header
 
 On Linux/Windows the custom strip is 56 logical pixels high, with an
-20px title and 18px traffic lights. The lights use 28px spacing and reserve
+24px title and 18px traffic lights. The lights use 28px spacing and reserve
 112px at the left. Tab pills use 10px vertical insets and 8px rounding.
 The hit areas, title truncation and terminal top inset share these metrics.
 Native macOS strip metrics remain as before. Terminal font settings are
-independent; the local configuration keeps WenKai Mono size 18 and Medium
+independent; the local configuration keeps WenKai Mono size 24 and Medium
 500 for bold/italic-bold.
