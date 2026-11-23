@@ -36,6 +36,16 @@ impl<'a> WgpuContext<'a> {
         // - `webgpu`
         // - `primary`
         let backend = wgpu::Backends::from_env().unwrap_or(wgpu_backend);
+        // wgpu 30 needs the presentation display at instance creation for
+        // GLES, especially on Wayland. A headless EGL instance cannot present
+        // to the window and otherwise excludes the WSLg D3D12/GL adapter.
+        #[cfg(target_os = "linux")]
+        let sugarloaf_window = std::sync::Arc::new(sugarloaf_window);
+        #[cfg(target_os = "linux")]
+        let mut instance_desc = wgpu::InstanceDescriptor::new_with_display_handle(
+            Box::new(std::sync::Arc::clone(&sugarloaf_window)),
+        );
+        #[cfg(not(target_os = "linux"))]
         let mut instance_desc = wgpu::InstanceDescriptor::new_without_display_handle();
         instance_desc.backends = backend;
         let instance = wgpu::Instance::new(instance_desc);

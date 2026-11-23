@@ -85,12 +85,13 @@ impl Debug for SugarloafWithErrors<'_> {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct SugarloafWindowSize {
     pub width: f32,
     pub height: f32,
 }
 
+#[derive(Debug)]
 pub struct SugarloafWindow {
     pub handle: raw_window_handle::RawWindowHandle,
     pub display: raw_window_handle::RawDisplayHandle,
