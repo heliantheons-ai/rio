@@ -34,7 +34,7 @@ const PROGRESS_EASE_SECS: f32 = 0.2;
 const TITLE_FONT_SIZE: f32 = if cfg!(target_os = "macos") {
     12.0
 } else {
-    18.0
+    20.0
 };
 
 const TAB_PADDING_X: f32 = 27.0;
